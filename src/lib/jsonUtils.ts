@@ -1,4 +1,22 @@
+import { MAX_JSON_FILE_BYTES } from "@/lib/constants";
 import type { IndentTemplate, ParseResult } from "@/types";
+
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${kb.toFixed(1)} KB`;
+  return `${(kb / 1024).toFixed(1)} MB`;
+}
+
+export function validateFileSize(
+  bytes: number,
+  maxBytes = MAX_JSON_FILE_BYTES
+): string | null {
+  if (bytes > maxBytes) {
+    return `File is too large (${formatFileSize(bytes)}). Please choose a file under ${formatFileSize(maxBytes)}.`;
+  }
+  return null;
+}
 
 export function offsetToLineColumn(
   input: string,

@@ -17,3 +17,6 @@ export const SITE_NAME = "JSON Formatter & Validator";
 
 export const SITE_DESCRIPTION =
   "Free online JSON formatter and validator. Beautify, format, and validate JSON instantly in your browser. Your data never leaves your device.";
+
+/** Client-side upload limit (NFR-07). */
+export const MAX_JSON_FILE_BYTES = 1024 * 1024;
