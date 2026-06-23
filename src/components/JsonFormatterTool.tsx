@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { INDENT_OPTIONS, SAMPLE_JSON } from "@/lib/constants";
 import { useJsonProcessor } from "@/hooks/useJsonProcessor";
 import type { JsonError } from "@/types";
@@ -41,6 +41,7 @@ export function JsonFormatterTool() {
     state,
     process,
     clear,
+    loadSample,
     copy,
     download,
     toast,
@@ -49,6 +50,28 @@ export function JsonFormatterTool() {
   const isMac = useIsMac();
 
   const canExport = state.isValid && state.formatted.length > 0;
+
+  const [visibleToast, setVisibleToast] = useState<string | null>(null);
+  const [toastVisible, setToastVisible] = useState(false);
+  const toastRafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (toast) {
+      setVisibleToast(toast);
+      toastRafRef.current = requestAnimationFrame(() => {
+        setToastVisible(true);
+      });
+      return () => {
+        if (toastRafRef.current !== null) {
+          cancelAnimationFrame(toastRafRef.current);
+        }
+      };
+    }
+
+    setToastVisible(false);
+    const timer = setTimeout(() => setVisibleToast(null), 200);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   function handleInputKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
@@ -107,6 +130,13 @@ export function JsonFormatterTool() {
               >
                 Clear
               </button>
+              <button
+                type="button"
+                onClick={loadSample}
+                className="rounded-lg border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+              >
+                Load sample
+              </button>
               <span className="hidden text-xs text-zinc-500 sm:inline">
                 {isMac ? "⌘ Enter" : "Ctrl+Enter"} to process
               </span>
@@ -146,23 +176,36 @@ export function JsonFormatterTool() {
             spellCheck={false}
             className="min-h-[320px] resize-y rounded-lg border border-zinc-300 bg-zinc-50 p-4 font-mono text-sm leading-relaxed text-zinc-900 shadow-sm"
           />
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={copy}
-              disabled={!canExport}
-              className="rounded-lg border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              title={!canExport ? "Process valid JSON first" : undefined}
+              className="inline-flex"
             >
-              Copy
-            </button>
-            <button
-              type="button"
-              onClick={download}
-              disabled={!canExport}
-              className="rounded-lg border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
+              <button
+                type="button"
+                onClick={copy}
+                disabled={!canExport}
+                className="rounded-lg border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Copy
+              </button>
+            </span>
+            <span
+              title={!canExport ? "Process valid JSON first" : undefined}
+              className="inline-flex"
             >
-              Download
-            </button>
+              <button
+                type="button"
+                onClick={download}
+                disabled={!canExport}
+                className="rounded-lg border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Download
+              </button>
+            </span>
+            {!canExport && (
+              <span className="text-xs text-zinc-500">Process valid JSON first</span>
+            )}
           </div>
         </div>
       </div>
@@ -186,12 +229,13 @@ export function JsonFormatterTool() {
         </div>
       )}
 
-      {toast && (
+      {visibleToast && (
         <div
           role="status"
-          className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-lg bg-zinc-800 px-4 py-2 text-sm text-white shadow-lg"
+          aria-live="assertive"
+          className={`toast fixed bottom-6 left-1/2 z-50 rounded-lg bg-zinc-800 px-4 py-2 text-sm text-white shadow-lg${toastVisible ? " toast--visible" : ""}`}
         >
-          {toast}
+          {visibleToast}
         </div>
       )}
     </section>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import { SAMPLE_JSON } from "@/lib/constants";
 import { formatJson, parseJson } from "@/lib/jsonUtils";
 import type { IndentTemplate, ProcessState } from "@/types";
 
@@ -54,6 +55,11 @@ export function useJsonProcessor() {
     setState(initialState);
   }, []);
 
+  const loadSample = useCallback(() => {
+    setInput(SAMPLE_JSON);
+    setState(initialState);
+  }, []);
+
   const copy = useCallback(async () => {
     if (!state.isValid || !formatted) return;
     try {
@@ -84,6 +90,7 @@ export function useJsonProcessor() {
     state: { ...state, formatted },
     process,
     clear,
+    loadSample,
     copy,
     download,
     toast,

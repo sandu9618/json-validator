@@ -63,3 +63,16 @@ textarea#json-output {
   font-weight: 600;
   color: inherit;
 }
+
+.toast {
+  opacity: 0;
+  transform: translate(-50%, 0.5rem);
+  transition:
+    opacity 200ms ease-out,
+    transform 200ms ease-out;
+}
+
+.toast--visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
