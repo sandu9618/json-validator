@@ -1,8 +1,4 @@
 {
-  "git": {
-    "deploymentEnabled": {
-      "main": false,
-      "prod": false
-    }
-  }
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "ignoreCommand": "echo 'Skipped: deployments run via GitHub Actions only' && exit 0"
 }
