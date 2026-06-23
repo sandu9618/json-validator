@@ -28,7 +28,15 @@ textarea#json-output {
 }
 
 textarea#json-input {
-  scroll-margin-top: 1rem;
+  scroll-margin-top: 2rem;
+  scroll-margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+  textarea#json-input {
+    scroll-margin-top: 1rem;
+    scroll-margin-bottom: 0;
+  }
 }
 
 .prose h2 {

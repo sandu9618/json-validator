@@ -137,7 +137,8 @@ export function JsonFormatterTool() {
       return;
     }
 
-    textarea.focus();
+    textarea.focus({ preventScroll: true });
+    textarea.scrollIntoView({ block: "nearest", behavior: "smooth" });
     textarea.setSelectionRange(start, end);
     scrollTextareaToLine(textarea, line);
 
@@ -145,34 +146,38 @@ export function JsonFormatterTool() {
     window.setTimeout(() => setErrorHighlight(false), 1500);
   }
 
-  return (
-    <section aria-label="JSON formatter tool" className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <label htmlFor="indent-template" className="text-sm font-medium text-zinc-600">
-          Indent:
-        </label>
-        <select
-          id="indent-template"
-          value={template}
-          onChange={(e) => setTemplate(e.target.value as typeof template)}
-          className="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900"
-        >
-          {INDENT_OPTIONS.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </div>
+  const btnClass =
+    "min-h-[44px] rounded-lg px-5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2";
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto_auto] lg:gap-x-4 lg:gap-y-2">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 lg:col-start-1 lg:row-start-1 lg:self-stretch lg:content-center">
-          <label htmlFor="json-input" className="text-sm font-semibold text-zinc-800">
-            JSON Input
-          </label>
-          {loadedFilename && (
-            <span className="text-xs text-zinc-500">Loaded: {loadedFilename}</span>
-          )}
+  return (
+    <section aria-label="JSON formatter tool" className="space-y-3 sm:space-y-4">
+      <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto_auto] lg:gap-x-4 lg:gap-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 lg:col-start-1 lg:row-start-1 lg:self-stretch lg:content-center">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <label htmlFor="json-input" className="text-sm font-semibold text-zinc-800">
+              JSON Input
+            </label>
+            {loadedFilename && (
+              <span className="text-xs text-zinc-500">Loaded: {loadedFilename}</span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="indent-template" className="text-sm font-medium text-zinc-600">
+              Indent:
+            </label>
+            <select
+              id="indent-template"
+              value={template}
+              onChange={(e) => setTemplate(e.target.value as typeof template)}
+              className="min-h-[44px] rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900"
+            >
+              {INDENT_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
         <textarea
           ref={inputRef}
@@ -188,7 +193,7 @@ export function JsonFormatterTool() {
               : " focus:ring-2 focus:ring-blue-500/20"
           }`}
         />
-        <div className="flex flex-wrap items-center gap-2 lg:col-start-1 lg:row-start-3 lg:self-start">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-2 lg:col-start-1 lg:row-start-3 lg:self-start">
           <input
             ref={fileInputRef}
             type="file"
@@ -201,28 +206,28 @@ export function JsonFormatterTool() {
           <button
             type="button"
             onClick={process}
-            className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className={`${btnClass} bg-blue-600 font-semibold text-white hover:bg-blue-700 focus:ring-blue-500`}
           >
             Process
           </button>
           <button
             type="button"
             onClick={clear}
-            className="rounded-lg border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+            className={`${btnClass} border border-zinc-300 bg-white font-medium text-zinc-700 hover:bg-zinc-50 focus:ring-zinc-400`}
           >
             Clear
           </button>
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="rounded-lg border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+            className={`${btnClass} border border-zinc-300 bg-white font-medium text-zinc-700 hover:bg-zinc-50 focus:ring-zinc-400`}
           >
             Upload file
           </button>
           <button
             type="button"
             onClick={loadSample}
-            className="rounded-lg border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+            className={`${btnClass} border border-zinc-300 bg-white font-medium text-zinc-700 hover:bg-zinc-50 focus:ring-zinc-400`}
           >
             Load sample
           </button>
@@ -273,7 +278,7 @@ export function JsonFormatterTool() {
               type="button"
               onClick={copy}
               disabled={!canExport}
-              className="rounded-lg border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className={`${btnClass} border border-zinc-300 bg-white font-medium text-zinc-700 hover:bg-zinc-50 focus:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-40`}
             >
               Copy
             </button>
@@ -286,7 +291,7 @@ export function JsonFormatterTool() {
               type="button"
               onClick={download}
               disabled={!canExport}
-              className="rounded-lg border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-40"
+              className={`${btnClass} border border-zinc-300 bg-white font-medium text-zinc-700 hover:bg-zinc-50 focus:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-40`}
             >
               Download
             </button>
@@ -317,7 +322,7 @@ export function JsonFormatterTool() {
                     <button
                       type="button"
                       onClick={() => handleErrorClick(error)}
-                      className="cursor-pointer text-left underline-offset-2 hover:underline"
+                      className="-mx-1 min-h-[44px] cursor-pointer rounded px-1 py-2 text-left underline-offset-2 hover:underline"
                     >
                       {location && (
                         <span className="font-medium">{location}</span>
