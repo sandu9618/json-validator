@@ -22,7 +22,6 @@ export type ParseResult = ParseSuccess | ParseFailure;
 export type ValidationStatus = "idle" | "valid" | "invalid";
 
 export interface ProcessState {
-  formatted: string;
   errors: JsonError[];
   isValid: boolean;
   status: ValidationStatus;
