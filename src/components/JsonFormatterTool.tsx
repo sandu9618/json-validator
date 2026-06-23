@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { INDENT_OPTIONS, SAMPLE_JSON } from "@/lib/constants";
 import { useJsonProcessor } from "@/hooks/useJsonProcessor";
 import {
@@ -76,28 +76,6 @@ export function JsonFormatterTool() {
   const [errorHighlight, setErrorHighlight] = useState(false);
 
   const canExport = state.isValid && state.formatted.length > 0;
-
-  const [visibleToast, setVisibleToast] = useState<string | null>(null);
-  const [toastVisible, setToastVisible] = useState(false);
-  const toastRafRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (toast) {
-      setVisibleToast(toast);
-      toastRafRef.current = requestAnimationFrame(() => {
-        setToastVisible(true);
-      });
-      return () => {
-        if (toastRafRef.current !== null) {
-          cancelAnimationFrame(toastRafRef.current);
-        }
-      };
-    }
-
-    setToastVisible(false);
-    const timer = setTimeout(() => setVisibleToast(null), 200);
-    return () => clearTimeout(timer);
-  }, [toast]);
 
   function handleInputKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
@@ -346,13 +324,13 @@ export function JsonFormatterTool() {
         </div>
       )}
 
-      {visibleToast && (
+      {toast && (
         <div
           role="status"
           aria-live="assertive"
-          className={`toast fixed bottom-6 left-1/2 z-50 rounded-lg bg-zinc-800 px-4 py-2 text-sm text-white shadow-lg${toastVisible ? " toast--visible" : ""}`}
+          className="toast fixed bottom-6 left-1/2 z-50 rounded-lg bg-zinc-800 px-4 py-2 text-sm text-white shadow-lg"
         >
-          {visibleToast}
+          {toast}
         </div>
       )}
     </section>
