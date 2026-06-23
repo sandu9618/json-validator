@@ -1,9 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { INDENT_OPTIONS, SAMPLE_JSON } from "@/lib/constants";
 import { useJsonProcessor } from "@/hooks/useJsonProcessor";
 import type { JsonError } from "@/types";
+
+const MAC_RE = /Mac|iPhone|iPad|iPod/;
+
+function useIsMac(): boolean {
+  return useSyncExternalStore(
+    () => () => {},
+    () => MAC_RE.test(navigator.userAgent),
+    () => false
+  );
+}
 
 function formatInputSize(chars: number): string {
   if (chars < 1024) return `${chars} chars`;
@@ -36,11 +46,7 @@ export function JsonFormatterTool() {
     toast,
   } = useJsonProcessor();
 
-  const [isMac, setIsMac] = useState(false);
-
-  useEffect(() => {
-    setIsMac(/Mac|iPhone|iPad|iPod/.test(navigator.userAgent));
-  }, []);
+  const isMac = useIsMac();
 
   const canExport = state.isValid && state.formatted.length > 0;
 
