@@ -1,8 +1,16 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { INDENT_OPTIONS, SAMPLE_JSON } from "@/lib/constants";
 import { useJsonProcessor } from "@/hooks/useJsonProcessor";
 import type { JsonError } from "@/types";
+
+function formatInputSize(chars: number): string {
+  if (chars < 1024) return `${chars} chars`;
+  const kb = chars / 1024;
+  if (kb < 1024) return `${kb.toFixed(1)} KB`;
+  return `${(kb / 1024).toFixed(1)} MB`;
+}
 
 function formatErrorLocation(error: JsonError): string {
   if (error.line !== undefined && error.column !== undefined) {
@@ -28,7 +36,20 @@ export function JsonFormatterTool() {
     toast,
   } = useJsonProcessor();
 
+  const [isMac, setIsMac] = useState(false);
+
+  useEffect(() => {
+    setIsMac(/Mac|iPhone|iPad|iPod/.test(navigator.userAgent));
+  }, []);
+
   const canExport = state.isValid && state.formatted.length > 0;
+
+  function handleInputKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+      e.preventDefault();
+      process();
+    }
+  }
 
   return (
     <section aria-label="JSON formatter tool" className="space-y-4">
@@ -59,25 +80,34 @@ export function JsonFormatterTool() {
             id="json-input"
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleInputKeyDown}
             placeholder={SAMPLE_JSON}
             spellCheck={false}
             className="min-h-[320px] resize-y rounded-lg border border-zinc-300 bg-white p-4 font-mono text-sm leading-relaxed text-zinc-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           />
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={process}
-              className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              Process
-            </button>
-            <button
-              type="button"
-              onClick={clear}
-              className="rounded-lg border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
-            >
-              Clear
-            </button>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={process}
+                className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Process
+              </button>
+              <button
+                type="button"
+                onClick={clear}
+                className="rounded-lg border border-zinc-300 bg-white px-5 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+              >
+                Clear
+              </button>
+              <span className="hidden text-xs text-zinc-500 sm:inline">
+                {isMac ? "⌘ Enter" : "Ctrl+Enter"} to process
+              </span>
+            </div>
+            <span className="text-xs text-zinc-500 tabular-nums">
+              {formatInputSize(input.length)}
+            </span>
           </div>
         </div>
 
