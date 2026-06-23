@@ -1,7 +1,8 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
-import { formatJson, parseJson } from "@/lib/jsonUtils";
+import { useCallback, useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { SAMPLE_JSON } from "@/lib/constants";
+import { formatJson, parseJson, validateFileSize } from "@/lib/jsonUtils";
 import type { IndentTemplate, ProcessState } from "@/types";
 
 const initialState: ProcessState = {
@@ -11,11 +12,39 @@ const initialState: ProcessState = {
   parsedValue: null,
 };
 
+function applyParseResult(
+  setState: Dispatch<SetStateAction<ProcessState>>,
+  input: string
+): void {
+  const result = parseJson(input);
+  if (!result.ok) {
+    setState({
+      errors: result.errors,
+      isValid: false,
+      status: "invalid",
+      parsedValue: null,
+    });
+    return;
+  }
+  setState({
+    errors: [],
+    isValid: true,
+    status: "valid",
+    parsedValue: result.value,
+  });
+}
+
 export function useJsonProcessor() {
-  const [input, setInput] = useState("");
+  const [input, setInputState] = useState("");
+  const [loadedFilename, setLoadedFilename] = useState<string | null>(null);
   const [template, setTemplate] = useState<IndentTemplate>("twospace");
   const [state, setState] = useState<ProcessState>(initialState);
   const [toast, setToast] = useState<string | null>(null);
+
+  const setInput = useCallback((value: string) => {
+    setInputState(value);
+    setLoadedFilename(null);
+  }, []);
 
   const formatted = useMemo(
     () =>
@@ -31,27 +60,73 @@ export function useJsonProcessor() {
   }, []);
 
   const process = useCallback(() => {
-    const result = parseJson(input);
-    if (!result.ok) {
+    applyParseResult(setState, input);
+  }, [input]);
+
+  const clear = useCallback(() => {
+    setInputState("");
+    setLoadedFilename(null);
+    setState(initialState);
+  }, []);
+
+  const loadSample = useCallback(() => {
+    setInputState(SAMPLE_JSON);
+    setLoadedFilename(null);
+    setState(initialState);
+  }, []);
+
+  const loadFromFile = useCallback((file: File) => {
+    const sizeError = validateFileSize(file.size);
+    if (sizeError) {
       setState({
-        errors: result.errors,
+        errors: [{ message: sizeError }],
         isValid: false,
         status: "invalid",
         parsedValue: null,
       });
+      setLoadedFilename(null);
       return;
     }
-    setState({
-      errors: [],
-      isValid: true,
-      status: "valid",
-      parsedValue: result.value,
-    });
-  }, [input]);
 
-  const clear = useCallback(() => {
-    setInput("");
-    setState(initialState);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const content = reader.result;
+      if (typeof content !== "string") {
+        setState({
+          errors: [{ message: "Could not read file. Please try again." }],
+          isValid: false,
+          status: "invalid",
+          parsedValue: null,
+        });
+        setLoadedFilename(null);
+        return;
+      }
+
+      if (!content.trim()) {
+        setState({
+          errors: [{ message: "File is empty. Choose a JSON file with content." }],
+          isValid: false,
+          status: "invalid",
+          parsedValue: null,
+        });
+        setLoadedFilename(null);
+        return;
+      }
+
+      setInputState(content);
+      setLoadedFilename(file.name);
+      applyParseResult(setState, content);
+    };
+    reader.onerror = () => {
+      setState({
+        errors: [{ message: "Could not read file. Please try again." }],
+        isValid: false,
+        status: "invalid",
+        parsedValue: null,
+      });
+      setLoadedFilename(null);
+    };
+    reader.readAsText(file);
   }, []);
 
   const copy = useCallback(async () => {
@@ -79,11 +154,14 @@ export function useJsonProcessor() {
   return {
     input,
     setInput,
+    loadedFilename,
     template,
     setTemplate,
     state: { ...state, formatted },
     process,
     clear,
+    loadSample,
+    loadFromFile,
     copy,
     download,
     toast,

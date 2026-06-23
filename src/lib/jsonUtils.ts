@@ -1,4 +1,22 @@
+import { MAX_JSON_FILE_BYTES } from "@/lib/constants";
 import type { IndentTemplate, ParseResult } from "@/types";
+
+export function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${kb.toFixed(1)} KB`;
+  return `${(kb / 1024).toFixed(1)} MB`;
+}
+
+export function validateFileSize(
+  bytes: number,
+  maxBytes = MAX_JSON_FILE_BYTES
+): string | null {
+  if (bytes > maxBytes) {
+    return `File is too large (${formatFileSize(bytes)}). Please choose a file under ${formatFileSize(maxBytes)}.`;
+  }
+  return null;
+}
 
 export function offsetToLineColumn(
   input: string,
@@ -7,6 +25,40 @@ export function offsetToLineColumn(
   const before = input.slice(0, offset);
   const lines = before.split("\n");
   return { line: lines.length, column: (lines.at(-1)?.length ?? 0) + 1 };
+}
+
+export function lineColumnToOffset(
+  input: string,
+  line: number,
+  column: number
+): number {
+  const lines = input.split("\n");
+  if (line < 1 || line > lines.length) {
+    return Math.max(0, input.length);
+  }
+
+  let offset = 0;
+  for (let i = 0; i < line - 1; i++) {
+    offset += lines[i].length + 1;
+  }
+  offset += Math.max(0, column - 1);
+  return Math.min(offset, input.length);
+}
+
+export function getLineRange(
+  input: string,
+  line: number
+): { start: number; end: number } {
+  const lines = input.split("\n");
+  if (line < 1 || line > lines.length) {
+    return { start: 0, end: input.length };
+  }
+
+  let start = 0;
+  for (let i = 0; i < line - 1; i++) {
+    start += lines[i].length + 1;
+  }
+  return { start, end: start + lines[line - 1].length };
 }
 
 function extractPosition(message: string): number | undefined {

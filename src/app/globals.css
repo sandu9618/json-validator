@@ -27,6 +27,18 @@ textarea#json-output {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
 }
 
+textarea#json-input {
+  scroll-margin-top: 2rem;
+  scroll-margin-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+  textarea#json-input {
+    scroll-margin-top: 1rem;
+    scroll-margin-bottom: 0;
+  }
+}
+
 .prose h2 {
   font-size: 1.5rem;
   font-weight: 700;
@@ -62,4 +74,17 @@ textarea#json-output {
 .prose strong {
   font-weight: 600;
   color: inherit;
+}
+
+.toast {
+  opacity: 0;
+  transform: translate(-50%, 0.5rem);
+  animation: toast-enter 200ms ease-out forwards;
+}
+
+@keyframes toast-enter {
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
 }
