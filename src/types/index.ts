@@ -26,4 +26,5 @@ export interface ProcessState {
   errors: JsonError[];
   isValid: boolean;
   status: ValidationStatus;
+  parsedValue: unknown | null;
 }

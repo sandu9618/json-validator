@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { formatJson, parseJson } from "@/lib/jsonUtils";
 import type { IndentTemplate, ProcessState } from "@/types";
 
@@ -9,6 +9,7 @@ const initialState: ProcessState = {
   errors: [],
   isValid: false,
   status: "idle",
+  parsedValue: null,
 };
 
 export function useJsonProcessor() {
@@ -30,6 +31,7 @@ export function useJsonProcessor() {
         errors: result.errors,
         isValid: false,
         status: "invalid",
+        parsedValue: null,
       });
       return;
     }
@@ -38,8 +40,19 @@ export function useJsonProcessor() {
       errors: [],
       isValid: true,
       status: "valid",
+      parsedValue: result.value,
     });
   }, [input, template]);
+
+  useEffect(() => {
+    setState((prev) => {
+      if (!prev.isValid || prev.parsedValue == null) return prev;
+      return {
+        ...prev,
+        formatted: formatJson(prev.parsedValue, template),
+      };
+    });
+  }, [template]);
 
   const clear = useCallback(() => {
     setInput("");
