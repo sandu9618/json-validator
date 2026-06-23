@@ -2,21 +2,25 @@ name: CI and Deploy
 
 on:
   push:
-    branches: [prod]
+    branches: [main, development]
   pull_request:
-    branches: [prod]
+    branches: [development, main]
 
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   ci:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
@@ -25,14 +29,51 @@ jobs:
       - run: npm run lint
       - run: npm run build
 
-  deploy:
+  deploy-preview:
     needs: ci
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/prod'
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Pull Vercel env
+        run: npx vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build for Vercel
+        run: npx vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy preview to Vercel
+        id: deploy
+        run: |
+          URL=$(npx vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Comment preview URL on PR
+        uses: actions/github-script@v9
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `Preview deployed: ${{ steps.deploy.outputs.url }}`
+            })
+
+  deploy-production:
+    needs: ci
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: npm
