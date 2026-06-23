@@ -27,6 +27,10 @@ textarea#json-output {
   font-family: var(--font-geist-mono), ui-monospace, monospace;
 }
 
+textarea#json-input {
+  scroll-margin-top: 1rem;
+}
+
 .prose h2 {
   font-size: 1.5rem;
   font-weight: 700;

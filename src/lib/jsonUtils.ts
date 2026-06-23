@@ -27,6 +27,40 @@ export function offsetToLineColumn(
   return { line: lines.length, column: (lines.at(-1)?.length ?? 0) + 1 };
 }
 
+export function lineColumnToOffset(
+  input: string,
+  line: number,
+  column: number
+): number {
+  const lines = input.split("\n");
+  if (line < 1 || line > lines.length) {
+    return Math.max(0, input.length);
+  }
+
+  let offset = 0;
+  for (let i = 0; i < line - 1; i++) {
+    offset += lines[i].length + 1;
+  }
+  offset += Math.max(0, column - 1);
+  return Math.min(offset, input.length);
+}
+
+export function getLineRange(
+  input: string,
+  line: number
+): { start: number; end: number } {
+  const lines = input.split("\n");
+  if (line < 1 || line > lines.length) {
+    return { start: 0, end: input.length };
+  }
+
+  let start = 0;
+  for (let i = 0; i < line - 1; i++) {
+    start += lines[i].length + 1;
+  }
+  return { start, end: start + lines[line - 1].length };
+}
+
 function extractPosition(message: string): number | undefined {
   const positionMatch = message.match(/position\s+(\d+)/i);
   if (positionMatch) return parseInt(positionMatch[1], 10);

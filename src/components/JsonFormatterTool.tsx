@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { INDENT_OPTIONS, SAMPLE_JSON } from "@/lib/constants";
 import { useJsonProcessor } from "@/hooks/useJsonProcessor";
+import {
+  getLineRange,
+  lineColumnToOffset,
+  offsetToLineColumn,
+} from "@/lib/jsonUtils";
 import type { JsonError } from "@/types";
 
 const MAC_RE = /Mac|iPhone|iPad|iPod/;
@@ -32,6 +37,22 @@ function formatErrorLocation(error: JsonError): string {
   return "";
 }
 
+function isErrorNavigable(error: JsonError): boolean {
+  return (
+    (error.line !== undefined && error.column !== undefined) ||
+    error.offset !== undefined
+  );
+}
+
+function scrollTextareaToLine(textarea: HTMLTextAreaElement, line: number): void {
+  const style = getComputedStyle(textarea);
+  const lineHeight = parseFloat(style.lineHeight) || 20;
+  const paddingTop = parseFloat(style.paddingTop) || 0;
+  const targetScroll =
+    (line - 1) * lineHeight - textarea.clientHeight / 2 + lineHeight / 2;
+  textarea.scrollTop = Math.max(0, targetScroll + paddingTop);
+}
+
 export function JsonFormatterTool() {
   const {
     input,
@@ -51,6 +72,8 @@ export function JsonFormatterTool() {
 
   const isMac = useIsMac();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [errorHighlight, setErrorHighlight] = useState(false);
 
   const canExport = state.isValid && state.formatted.length > 0;
 
@@ -91,6 +114,37 @@ export function JsonFormatterTool() {
     e.target.value = "";
   }
 
+  function handleErrorClick(error: JsonError) {
+    const textarea = inputRef.current;
+    if (!textarea || !isErrorNavigable(error)) return;
+
+    let line: number;
+    let start: number;
+    let end: number;
+
+    if (error.line !== undefined && error.column !== undefined) {
+      line = error.line;
+      const lineRange = getLineRange(input, line);
+      start = Math.min(lineColumnToOffset(input, line, error.column), lineRange.end);
+      end = lineRange.end;
+    } else if (error.offset !== undefined) {
+      const position = offsetToLineColumn(input, error.offset);
+      line = position.line;
+      const lineRange = getLineRange(input, line);
+      start = lineRange.start;
+      end = lineRange.end;
+    } else {
+      return;
+    }
+
+    textarea.focus();
+    textarea.setSelectionRange(start, end);
+    scrollTextareaToLine(textarea, line);
+
+    setErrorHighlight(true);
+    window.setTimeout(() => setErrorHighlight(false), 1500);
+  }
+
   return (
     <section aria-label="JSON formatter tool" className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
@@ -121,13 +175,18 @@ export function JsonFormatterTool() {
           )}
         </div>
         <textarea
+          ref={inputRef}
           id="json-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleInputKeyDown}
           placeholder={SAMPLE_JSON}
           spellCheck={false}
-          className="min-h-[320px] resize-y rounded-lg border border-zinc-300 bg-white p-4 font-mono text-sm leading-relaxed text-zinc-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 lg:col-start-1 lg:row-start-2"
+          className={`min-h-[320px] resize-y rounded-lg border border-zinc-300 bg-white p-4 font-mono text-sm leading-relaxed text-zinc-900 shadow-sm focus:border-blue-500 focus:outline-none lg:col-start-1 lg:row-start-2${
+            errorHighlight
+              ? " ring-2 ring-red-400"
+              : " focus:ring-2 focus:ring-blue-500/20"
+          }`}
         />
         <div className="flex flex-wrap items-center gap-2 lg:col-start-1 lg:row-start-3 lg:self-start">
           <input
@@ -248,13 +307,36 @@ export function JsonFormatterTool() {
         >
           <h2 className="mb-2 text-sm font-semibold text-red-800">Validation Errors</h2>
           <ul className="space-y-2">
-            {state.errors.map((error, i) => (
-              <li key={i} className="text-sm text-red-700">
-                <span className="font-medium">{formatErrorLocation(error)}</span>
-                {formatErrorLocation(error) && " — "}
-                {error.message}
-              </li>
-            ))}
+            {state.errors.map((error, i) => {
+              const location = formatErrorLocation(error);
+              const navigable = isErrorNavigable(error);
+
+              return (
+                <li key={i} className="text-sm text-red-700">
+                  {navigable ? (
+                    <button
+                      type="button"
+                      onClick={() => handleErrorClick(error)}
+                      className="cursor-pointer text-left underline-offset-2 hover:underline"
+                    >
+                      {location && (
+                        <span className="font-medium">{location}</span>
+                      )}
+                      {location && " — "}
+                      {error.message}
+                    </button>
+                  ) : (
+                    <>
+                      {location && (
+                        <span className="font-medium">{location}</span>
+                      )}
+                      {location && " — "}
+                      {error.message}
+                    </>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
