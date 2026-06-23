@@ -118,9 +118,26 @@ export function JsonFormatterTool() {
         </div>
 
         <div className="flex flex-col gap-2">
-          <label htmlFor="json-output" className="text-sm font-semibold text-zinc-800">
-            Formatted Output
-          </label>
+          <div className="flex flex-wrap items-center gap-2">
+            <label htmlFor="json-output" className="text-sm font-semibold text-zinc-800">
+              Formatted Output
+            </label>
+            {state.status === "valid" && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                <svg
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                Valid JSON
+              </span>
+            )}
+          </div>
           <textarea
             id="json-output"
             readOnly
@@ -150,39 +167,13 @@ export function JsonFormatterTool() {
         </div>
       </div>
 
-      <div
-        role={state.status === "invalid" ? "alert" : "status"}
-        aria-live="polite"
-        className={`rounded-lg border p-4 ${
-          state.status === "invalid"
-            ? "border-red-200 bg-red-50"
-            : state.status === "valid"
-              ? "border-green-200 bg-green-50"
-              : "border-zinc-200 bg-white"
-        }`}
-      >
-        <h2
-          className={`mb-2 text-sm font-semibold ${
-            state.status === "invalid"
-              ? "text-red-800"
-              : state.status === "valid"
-                ? "text-green-800"
-                : "text-zinc-800"
-          }`}
+      {state.status === "invalid" && (
+        <div
+          role="alert"
+          aria-live="assertive"
+          className="rounded-lg border border-red-200 bg-red-50 p-4"
         >
-          Validator Output
-        </h2>
-        {state.status === "idle" && (
-          <p className="text-sm text-zinc-600">
-            Paste JSON above and click Process to validate syntax.
-          </p>
-        )}
-        {state.status === "valid" && (
-          <p className="text-sm text-green-700">
-            Valid JSON — no syntax errors found.
-          </p>
-        )}
-        {state.status === "invalid" && (
+          <h2 className="mb-2 text-sm font-semibold text-red-800">Validation Errors</h2>
           <ul className="space-y-2">
             {state.errors.map((error, i) => (
               <li key={i} className="text-sm text-red-700">
@@ -192,8 +183,8 @@ export function JsonFormatterTool() {
               </li>
             ))}
           </ul>
-        )}
-      </div>
+        </div>
+      )}
 
       {toast && (
         <div
