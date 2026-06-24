@@ -10,16 +10,21 @@ export default function HomePage() {
     <>
       <JsonLd />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10 sm:px-6 lg:px-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight text-zinc-900 sm:text-4xl">
-            JSON Formatter &amp; Validator
+        <header className="mb-8 text-center sm:text-left">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-blue-200/60 bg-blue-50/80 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-blue-700">
+            <span className="h-1.5 w-1.5 rounded-full bg-blue-500" aria-hidden="true" />
+            Free &amp; browser-based
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-[2.75rem] lg:leading-tight">
+            JSON Formatter
+            <span className="text-blue-600"> &amp; Validator</span>
           </h1>
-          <p className="mt-3 max-w-2xl text-lg text-zinc-600">
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-slate-600 sm:mx-0 sm:text-lg">
             {SITE_DESCRIPTION}
           </p>
         </header>
 
-        <p className="mb-6 inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-3 py-1.5 text-sm text-green-800">
+        <p className="trust-badge mb-6">
           <svg
             aria-hidden="true"
             className="h-4 w-4 shrink-0"
@@ -39,7 +44,7 @@ export default function HomePage() {
 
         <JsonFormatterTool />
 
-        <article className="mt-16 border-t border-zinc-200 pt-12">
+        <article className="mt-16 rounded-2xl border border-slate-200/80 bg-white/60 p-6 backdrop-blur-sm sm:p-10">
           <SeoContent />
           <FaqSection />
         </article>
