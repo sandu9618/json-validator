@@ -53,6 +53,62 @@ function scrollTextareaToLine(textarea: HTMLTextAreaElement, line: number): void
   textarea.scrollTop = Math.max(0, targetScroll + paddingTop);
 }
 
+function IconPlay() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+      <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+    </svg>
+  );
+}
+
+function IconTrash() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+    </svg>
+  );
+}
+
+function IconUpload() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+    </svg>
+  );
+}
+
+function IconDocument() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  );
+}
+
+function IconCopy() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+    </svg>
+  );
+}
+
+function IconDownload() {
+  return (
+    <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+    </svg>
+  );
+}
+
+function IconArrow() {
+  return (
+    <svg aria-hidden="true" className="h-5 w-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+    </svg>
+  );
+}
+
 export function JsonFormatterTool() {
   const {
     input,
@@ -124,212 +180,274 @@ export function JsonFormatterTool() {
     window.setTimeout(() => setErrorHighlight(false), 1500);
   }
 
-  const btnClass =
-    "min-h-[44px] rounded-lg px-5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2";
+  const inputPanelClass = [
+    "code-panel",
+    errorHighlight ? "code-panel--error" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const outputPanelClass = [
+    "code-panel",
+    state.status === "valid" ? "code-panel--valid" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <section aria-label="JSON formatter tool" className="space-y-3 sm:space-y-4">
-      <div className="grid grid-cols-1 gap-3 sm:gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto_auto_auto] lg:gap-x-4 lg:gap-y-2">
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 lg:col-start-1 lg:row-start-1 lg:self-stretch lg:content-center">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <label htmlFor="json-input" className="text-sm font-semibold text-zinc-800">
-              JSON Input
-            </label>
-            {loadedFilename && (
-              <span className="text-xs text-zinc-500">Loaded: {loadedFilename}</span>
-            )}
+    <section aria-label="JSON formatter tool">
+      <div className="tool-card p-4 sm:p-6">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_auto_1fr] lg:grid-rows-[1fr_auto] lg:items-stretch lg:gap-x-4 lg:gap-y-3">
+          {/* Input panel */}
+          <div className={`${inputPanelClass} lg:col-start-1 lg:row-start-1`}>
+            <div className="code-panel__header">
+              <div className="code-panel__title">
+                <span className="code-panel__dot bg-blue-400" aria-hidden="true" />
+                <label htmlFor="json-input">JSON Input</label>
+                {loadedFilename && (
+                  <span className="ml-1 rounded bg-blue-50 px-2 py-0.5 text-xs font-normal text-blue-600">
+                    {loadedFilename}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <label htmlFor="indent-template" className="text-xs font-medium text-slate-500">
+                  Indent
+                </label>
+                <select
+                  id="indent-template"
+                  value={template}
+                  onChange={(e) => setTemplate(e.target.value as typeof template)}
+                  className="min-h-[36px] rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 shadow-sm focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/20"
+                >
+                  {INDENT_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <textarea
+              ref={inputRef}
+              id="json-input"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleInputKeyDown}
+              placeholder={SAMPLE_JSON}
+              spellCheck={false}
+              className="code-panel__body font-mono"
+            />
+            <div className="code-panel__footer">
+              <span className="hidden sm:inline">
+                {isMac ? "⌘ Enter" : "Ctrl+Enter"} to process
+              </span>
+              <span className="tabular-nums sm:ml-auto">{formatInputSize(input.length)}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <label htmlFor="indent-template" className="text-sm font-medium text-zinc-600">
-              Indent:
-            </label>
-            <select
-              id="indent-template"
-              value={template}
-              onChange={(e) => setTemplate(e.target.value as typeof template)}
-              className="min-h-[44px] rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-sm text-zinc-900"
-            >
-              {INDENT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-        <textarea
-          ref={inputRef}
-          id="json-input"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleInputKeyDown}
-          placeholder={SAMPLE_JSON}
-          spellCheck={false}
-          className={`min-h-[320px] resize-y rounded-lg border border-zinc-300 bg-white p-4 font-mono text-sm leading-relaxed text-zinc-900 shadow-sm focus:border-blue-500 focus:outline-none lg:col-start-1 lg:row-start-2${
-            errorHighlight
-              ? " ring-2 ring-red-400"
-              : " focus:ring-2 focus:ring-blue-500/20"
-          }`}
-        />
-        <div className="flex flex-wrap items-center gap-2.5 sm:gap-2 lg:col-start-1 lg:row-start-3 lg:self-start">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json,application/json"
-            onChange={handleFileChange}
-            className="sr-only"
+
+          {/* Flow arrow — desktop only, centered between panels */}
+          <div
+            className="hidden lg:col-start-2 lg:row-start-1 lg:flex lg:items-center lg:justify-center lg:self-center"
             aria-hidden="true"
-            tabIndex={-1}
-          />
-          <button
-            type="button"
-            onClick={process}
-            className={`${btnClass} bg-blue-600 font-semibold text-white hover:bg-blue-700 focus:ring-blue-500`}
           >
-            Process
-          </button>
-          <button
-            type="button"
-            onClick={clear}
-            className={`${btnClass} border border-zinc-300 bg-white font-medium text-zinc-700 hover:bg-zinc-50 focus:ring-zinc-400`}
-          >
-            Clear
-          </button>
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className={`${btnClass} border border-zinc-300 bg-white font-medium text-zinc-700 hover:bg-zinc-50 focus:ring-zinc-400`}
-          >
-            Upload file
-          </button>
-          <button
-            type="button"
-            onClick={loadSample}
-            className={`${btnClass} border border-zinc-300 bg-white font-medium text-zinc-700 hover:bg-zinc-50 focus:ring-zinc-400`}
-          >
-            Load sample
-          </button>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-2 lg:col-start-1 lg:row-start-4">
-          <span className="hidden text-xs text-zinc-500 sm:inline">
-            {isMac ? "⌘ Enter" : "Ctrl+Enter"} to process
-          </span>
-          <span className="text-xs text-zinc-500 tabular-nums sm:ml-auto">
-            {formatInputSize(input.length)}
-          </span>
-        </div>
+            <IconArrow />
+          </div>
 
-        <div className="flex flex-wrap items-center gap-2 lg:col-start-2 lg:row-start-1 lg:self-stretch lg:content-center">
-          <label htmlFor="json-output" className="text-sm font-semibold text-zinc-800">
-            Formatted Output
-          </label>
-          {state.status === "valid" && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
-              <svg
-                aria-hidden="true"
-                className="h-3.5 w-3.5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2.5}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              Valid JSON
-            </span>
-          )}
-        </div>
-        <textarea
-          id="json-output"
-          readOnly
-          value={state.formatted}
-          placeholder="Formatted JSON will appear here after processing valid input."
-          spellCheck={false}
-          className="min-h-[320px] resize-y rounded-lg border border-zinc-300 bg-zinc-50 p-4 font-mono text-sm leading-relaxed text-zinc-900 shadow-sm lg:col-start-2 lg:row-start-2"
-        />
-        <div className="flex flex-wrap items-center gap-2 lg:col-start-2 lg:row-start-3 lg:self-start">
-          <span
-            title={!canExport ? "Process valid JSON first" : undefined}
-            className="inline-flex"
-          >
-            <button
-              type="button"
-              onClick={copy}
-              disabled={!canExport}
-              className={`${btnClass} border border-zinc-300 bg-white font-medium text-zinc-700 hover:bg-zinc-50 focus:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-40`}
-            >
-              Copy
-            </button>
-          </span>
-          <span
-            title={!canExport ? "Process valid JSON first" : undefined}
-            className="inline-flex"
-          >
-            <button
-              type="button"
-              onClick={download}
-              disabled={!canExport}
-              className={`${btnClass} border border-zinc-300 bg-white font-medium text-zinc-700 hover:bg-zinc-50 focus:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-40`}
-            >
-              Download
-            </button>
-          </span>
-        </div>
-        <div className="lg:col-start-2 lg:row-start-4">
-          {!canExport && (
-            <span className="text-xs text-zinc-500">Process valid JSON first</span>
-          )}
-        </div>
-      </div>
-
-      {state.status === "invalid" && (
-        <div
-          role="alert"
-          aria-live="assertive"
-          className="rounded-lg border border-red-200 bg-red-50 p-4"
-        >
-          <h2 className="mb-2 text-sm font-semibold text-red-800">Validation Errors</h2>
-          <ul className="space-y-2">
-            {state.errors.map((error, i) => {
-              const location = formatErrorLocation(error);
-              const navigable = isErrorNavigable(error);
-
-              return (
-                <li key={i} className="text-sm text-red-700">
-                  {navigable ? (
-                    <button
-                      type="button"
-                      onClick={() => handleErrorClick(error)}
-                      className="-mx-1 min-h-[44px] cursor-pointer rounded px-1 py-2 text-left underline-offset-2 hover:underline"
+          {/* Output panel */}
+          <div className={`${outputPanelClass} lg:col-start-3 lg:row-start-1`}>
+            <div className="code-panel__header">
+              <div className="code-panel__title">
+                <span
+                  className={`code-panel__dot ${state.status === "valid" ? "bg-emerald-400" : "bg-slate-300"}`}
+                  aria-hidden="true"
+                />
+                <label htmlFor="json-output">Formatted Output</label>
+              </div>
+              <div className="flex min-h-[36px] items-center">
+                {state.status === "valid" ? (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                    <svg
+                      aria-hidden="true"
+                      className="h-3 w-3"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2.5}
                     >
-                      {location && (
-                        <span className="font-medium">{location}</span>
-                      )}
-                      {location && " — "}
-                      {error.message}
-                    </button>
-                  ) : (
-                    <>
-                      {location && (
-                        <span className="font-medium">{location}</span>
-                      )}
-                      {location && " — "}
-                      {error.message}
-                    </>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    Valid
+                  </span>
+                ) : (
+                  <span className="invisible text-xs" aria-hidden="true">
+                    Valid
+                  </span>
+                )}
+              </div>
+            </div>
+            <textarea
+              id="json-output"
+              readOnly
+              value={state.formatted}
+              placeholder="Formatted JSON will appear here after processing valid input."
+              spellCheck={false}
+              className="code-panel__body code-panel__body--readonly font-mono"
+            />
+            <div className="code-panel__footer">
+              {!canExport ? (
+                <span>Process valid JSON to enable export</span>
+              ) : (
+                <span className="text-emerald-600">Ready to copy or download</span>
+              )}
+            </div>
+          </div>
+
+          {/* Input buttons */}
+          <div className="tool-actions lg:col-start-1 lg:row-start-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,application/json"
+              onChange={handleFileChange}
+              className="sr-only"
+              aria-hidden="true"
+              tabIndex={-1}
+            />
+            <button type="button" onClick={process} className="btn btn-primary">
+              <IconPlay />
+              Process
+            </button>
+            <button type="button" onClick={clear} className="btn btn-secondary">
+              <IconTrash />
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="btn btn-secondary"
+            >
+              <IconUpload />
+              Upload
+            </button>
+            <button type="button" onClick={loadSample} className="btn btn-secondary">
+              <IconDocument />
+              Sample
+            </button>
+          </div>
+
+          {/* Spacer under arrow column */}
+          <div className="hidden lg:col-start-2 lg:row-start-2 lg:block" aria-hidden="true" />
+
+          {/* Output buttons */}
+          <div className="tool-actions lg:col-start-3 lg:row-start-2">
+            <span
+              title={!canExport ? "Process valid JSON first" : undefined}
+              className="inline-flex"
+            >
+              <button
+                type="button"
+                onClick={copy}
+                disabled={!canExport}
+                className="btn btn-secondary"
+              >
+                <IconCopy />
+                Copy
+              </button>
+            </span>
+            <span
+              title={!canExport ? "Process valid JSON first" : undefined}
+              className="inline-flex"
+            >
+              <button
+                type="button"
+                onClick={download}
+                disabled={!canExport}
+                className="btn btn-secondary"
+              >
+                <IconDownload />
+                Download
+              </button>
+            </span>
+          </div>
         </div>
-      )}
+
+        {state.status === "invalid" && (
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="mt-5 rounded-xl border border-red-200/80 bg-gradient-to-br from-red-50 to-rose-50 p-4 shadow-sm"
+          >
+            <div className="mb-3 flex items-center gap-2">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-red-100 text-red-600">
+                <svg aria-hidden="true" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </span>
+              <h2 className="text-sm font-semibold text-red-800">
+                Validation Errors
+                <span className="ml-2 font-normal text-red-600">
+                  — click an error to jump to it
+                </span>
+              </h2>
+            </div>
+            <ul className="space-y-1">
+              {state.errors.map((error, i) => {
+                const location = formatErrorLocation(error);
+                const navigable = isErrorNavigable(error);
+
+                return (
+                  <li key={i} className="text-sm text-red-700">
+                    {navigable ? (
+                      <button
+                        type="button"
+                        onClick={() => handleErrorClick(error)}
+                        className="-mx-2 min-h-[44px] w-full cursor-pointer rounded-lg px-2 py-2 text-left transition-colors hover:bg-red-100/60"
+                      >
+                        {location && (
+                          <span className="font-mono text-xs font-semibold text-red-800">
+                            {location}
+                          </span>
+                        )}
+                        {location && (
+                          <span className="mx-2 text-red-300" aria-hidden="true">
+                            ·
+                          </span>
+                        )}
+                        <span>{error.message}</span>
+                      </button>
+                    ) : (
+                      <div className="px-2 py-2">
+                        {location && (
+                          <span className="font-mono text-xs font-semibold text-red-800">
+                            {location}
+                          </span>
+                        )}
+                        {location && (
+                          <span className="mx-2 text-red-300" aria-hidden="true">
+                            ·
+                          </span>
+                        )}
+                        <span>{error.message}</span>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+      </div>
 
       {toast && (
         <div
           role="status"
           aria-live="assertive"
-          className="toast fixed bottom-6 left-1/2 z-50 rounded-lg bg-zinc-800 px-4 py-2 text-sm text-white shadow-lg"
+          className="toast fixed bottom-6 left-1/2 z-50 flex items-center gap-2 rounded-xl border border-slate-700/50 bg-slate-800 px-5 py-2.5 text-sm font-medium text-white shadow-2xl shadow-slate-900/25"
         >
+          <svg aria-hidden="true" className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
           {toast}
         </div>
       )}
